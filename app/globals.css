@@ -1,6 +1,24 @@
 @import "tailwindcss";
 
-:root {
+/* optionally load Inter from Google */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+html, body { 
+  font-family: 'Inter', sans-serif; 
+  box-sizing: border-box;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+@theme{
+  --breakpoint-*:initial; /* 0px */
+  --breakpoint-tablet-sm: 40rem;     /* 640px */
+  --breakpoint-tablet: 56.5rem;      /* 904px */
+  --breakpoint-laptop: 64rem;        /* 1024px */
+  --breakpoint-desktop: 80rem;       /* 1280px */
+  --breakpoint-desktop-lg: 90rem;    /* 1440px */
+}
+
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -23,4 +41,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+
+.font-adjust {
+  font-size-adjust: 100%;
 }

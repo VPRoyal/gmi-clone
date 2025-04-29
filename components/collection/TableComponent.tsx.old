@@ -1,0 +1,193 @@
+import { useContext } from 'react';
+import { Star, StarBorder } from '@mui/icons-material';
+
+import { COLLECTIONS_COLUMNS, SUPPORTED_NETWORKS } from 'constants/index';
+import { CollectionsContext } from 'context/CollectionsContext';
+import { useWalletConnect } from 'hooks/useWalletConnect';
+import useWalletContext from 'hooks/useWalletContext';
+import useTokenContext from 'hooks/useTokenContext';
+import { formatBigDecimalNumbers } from 'utils/numbers';
+
+import { FlexBox, TableCellText } from 'components/StyledComponents';
+import SortTableHeaderText from 'components/CollectionsTable/SortTableHeaderText';
+import PriceCell from './PriceCell';
+import Badge from './Badge';
+import { NoBidsSVG } from 'components/ImageComponent';
+
+const CollectionsTable = ({ data, sortOptions, bordered }) => {
+  const { state, addFavoriteCollection, removeFavoriteCollection } = useContext(CollectionsContext);
+  const { storedChain } = useWalletContext();
+  const { connectWallet } = useWalletConnect();
+  const { connectedAndAuth } = useTokenContext();
+
+  const { view, favoriteCollections } = state;
+  const maxDecimal = storedChain === SUPPORTED_NETWORKS.Energi ? 0 : 2;
+
+  const handleFavorite = async (event, collection) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (connectedAndAuth) {
+      const found = favoriteCollections.find((item) => item.address === collection.address);
+      found
+        ? await removeFavoriteCollection(collection.address)
+        : await addFavoriteCollection(collection);
+    } else {
+      connectWallet();
+    }
+  };
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10">
+        <NoBidsSVG />
+        <div className="text-2xl mt-4">There are no collections to show</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`overflow-x-auto ${bordered ? 'border border-gray-300 rounded-lg' : ''}`}>
+      <table className="min-w-full table-fixed">
+        <thead>
+          <tr className="bg-gray-100 text-gray-700 text-center text-sm font-semibold">
+            {COLLECTIONS_COLUMNS.map((column) => (
+              <th
+                key={column.field}
+                className={`px-4 py-2 ${column.field === 'name' ? 'sticky left-0 bg-gray-100 z-10' : ''}`}
+              >
+                <SortTableHeaderText column={column} sortOptions={sortOptions} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="text-center text-gray-800 text-sm">
+          {data.map((row) => {
+            const isFavorite = favoriteCollections.find(
+              (collection) => collection.address === row.address,
+            );
+
+            return (
+              <tr
+                key={row.id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => (window.location.href = `/collections/${row.address}`)}
+              >
+                {/* Rank */}
+                <td className="px-2 py-3">
+                  <div className="flex items-center justify-center gap-1 relative">
+                    <span>{row.rank}</span>
+                    <button
+                      className="hidden group-hover:flex absolute right-2"
+                      onClick={(e) => handleFavorite(e, row)}
+                    >
+                      {isFavorite ? <Star className="text-yellow-400" /> : <StarBorder />}
+                    </button>
+                  </div>
+                </td>
+
+                {/* Name with Badge */}
+                <td className="px-2 py-3 sticky left-0 bg-white z-10">
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      mode="light" // Pass theme if dynamic
+                      imageUrl={row.contractThumbnailPathName}
+                      view={view}
+                    />
+                    <div className="truncate font-semibold">{row.name}</div>
+                    <button
+                      className="hidden group-hover:flex"
+                      onClick={(e) => handleFavorite(e, row)}
+                    >
+                      {isFavorite ? <Star className="text-yellow-400" /> : <StarBorder />}
+                    </button>
+                  </div>
+                </td>
+
+                {/* Floor Price */}
+                <td className="px-2 py-3">
+                  {row.floorPrice !== null ? (
+                    <PriceCell price={row.floorPrice} size={14} weight={600} max={maxDecimal} />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* Top Bid */}
+                <td className="px-2 py-3">
+                  {row.topBid ? (
+                    <PriceCell price={row.topBid} size={14} weight={600} max={maxDecimal} />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* 24h Change */}
+                <td className="px-2 py-3 text-sm font-normal">
+                  {row.change24h !== null ? (
+                    <span
+                      className={`${row.change24h > 0 ? 'text-green-500' : row.change24h < 0 ? 'text-red-500' : 'text-gray-600'}`}
+                    >
+                      {`${formatBigDecimalNumbers(row.change24h, 1)}%`}
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* 7d Change */}
+                <td className="px-2 py-3 text-sm font-normal">
+                  {row.change7d !== null ? (
+                    <span
+                      className={`${row.change7d > 0 ? 'text-green-500' : row.change7d < 0 ? 'text-red-500' : 'text-gray-600'}`}
+                    >
+                      {`${formatBigDecimalNumbers(row.change7d, 1)}%`}
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* 24h Volume */}
+                <td className="px-2 py-3">
+                  {row.volume24h ? (
+                    <PriceCell price={row.volume24h} size={14} weight={600} max={maxDecimal} />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* 7d Volume */}
+                <td className="px-2 py-3">
+                  {row.volume7d ? (
+                    <PriceCell price={row.volume7d} size={14} weight={600} max={maxDecimal} />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* Total Volume */}
+                <td className="px-2 py-3">
+                  {row.totalVolume ? (
+                    <PriceCell price={row.totalVolume} size={14} weight={600} max={maxDecimal} />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+
+                {/* Owners */}
+                <td className="px-2 py-3">
+                  {row.owners} ({Math.ceil((row.owners / row.circulatingSupply) * 100)}%)
+                </td>
+
+                {/* Supply */}
+                <td className="px-2 py-3">{row.circulatingSupply ?? '-'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default CollectionsTable;
