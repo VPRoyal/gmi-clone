@@ -4,7 +4,7 @@ import axios from 'axios';
 // const ENERGY_API="https://api.energiswap.exchange/v1/assets"
 // const Trending_Collections_API="https://api.reservoir.tools/collections/trending/v1"
 // const Collections_API="https://api.reservoir.tools/collections/v7"
-const collection_api="https://explorer-proxy-main.reservoir.tools/api/reservoir/apechain/collections/v7"
+const collection_api="https://api-apechain.reservoir.tools/collections/v7"
 
 export const collectionIds = [
   "0xa6babe18f2318d2880dd7da3126c19536048f8b0",
@@ -21,12 +21,13 @@ const formatPrice =(raw:string, decimals:number)=>{
 export async function getCollections(): Promise<Collection[]> {
   try {
     // Ensuring TypeSafety by introducing type of fetched data.
-    const apeCollections: any= await Promise.all(collectionIds.map(async (id) => {
-      const response = await axios.get<any>(collection_api, {
-        params:{id}
+    
+    const response = await axios.get<any>(collection_api, {
+        params:{
+          contract: collectionIds
+        }
       });
-      return response.data?.collections[0];
-    }))
+    const apeCollections: any=  response.data?.collections;
     
     // return response.data;
     return Object.values(apeCollections).map((collection: any) => ({

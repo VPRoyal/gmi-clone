@@ -55,11 +55,11 @@ export const CollectionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Initial fetch + 60s refresh
   useEffect(() => {
     refreshCollections();
-    intervalRef.current = setInterval(refreshCollections, 60 * 1000); // 60 seconds
+    // intervalRef.current = setInterval(refreshCollections, 60 * 1000); // 60 seconds
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    // return () => {
+    //   if (intervalRef.current) clearInterval(intervalRef.current);
+    // };
   }, []);
 
   return (
